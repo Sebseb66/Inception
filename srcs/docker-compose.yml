@@ -1,0 +1,56 @@
+services:
+  nginx:
+    container_name: nginx
+    depends_on:
+      - wordpress
+    build:
+      context: requirements/nginx
+    ports:
+      - "443:443"
+      - "9000:9000"
+    networks:
+      - inception_network
+    volumes:
+      - inception_wordpress:/var/www/wordpress
+
+  wordpress:
+    container_name: wordpress
+    depends_on:
+      - mariadb
+    build: requirements/wordpress
+    env_file: .env
+    expose:
+      - "9000"
+    networks:
+      - inception_network
+    volumes:
+      - inception_wordpress:/var/www/wordpress
+
+  mariadb:
+    container_name: mariadb
+    build: requirements/mariadb
+    env_file: .env
+    expose:
+      - "3306"
+    networks:
+      - inception_network
+    volumes:
+      - inception_db:/var/lib/mysql
+
+volumes:
+  inception_wordpress:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/sfroidev/data/wordpress
+      o: bind
+  inception_db:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/sfroidev/data/mysql
+      o: bind
+
+networks:
+  inception_network:
+    driver: bridge
